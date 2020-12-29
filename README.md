@@ -12,6 +12,7 @@ go get -t ./...
 go build
 ## Execute
 Copy config/config_sample.json to config/config.json
+
 Update config.json setting with you values.
 
 Run the tool
