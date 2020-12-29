@@ -17,6 +17,16 @@ Both MySQL and InfluxDB need to be exposed to the host you run the tool on over 
 # Supported Domains
 ## Sensor
 Currently only supported Sensors with state in numeric format.
+
+The following Attributes values would be copied if not empty or 0:
+
+*  Voltage 
+*	BatteryLevel 
+*	UnitOfMeasurement 
+*	FriendlyName
+*	DeviceClass 
+*	Model
+
 # HowTo
 ## Build
 go get -t ./...
