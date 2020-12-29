@@ -10,6 +10,9 @@ Currently only supported Temperature Sensors
 go get -t ./...
 
 go build
+
+chmod 766 hamysqldb2influxdb
+
 ## Execute
 Copy config/config_sample.json to config/config.json
 
