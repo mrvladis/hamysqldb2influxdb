@@ -1,0 +1,13 @@
+{
+    "MySQL_User": "hauser",
+    "MySQL_Password": "supersecretpassword",
+    "MySQL_Host": "127.0.0.1",
+    "MySQL_Port": "3306",
+    "MySQL_DB": "hadbmysql",
+    "MySQL_Charset": "utf8mb4",
+    "Influx_Host": "127.0.0.1",
+    "Influx_Port": "8086",
+    "Influx_Token": "xxxxxxxxxxxxxxxxxx==",
+    "Influx_Bucket": "habucket",
+    "Influx_Org": "haorg"
+}
