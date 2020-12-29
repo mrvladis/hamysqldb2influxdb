@@ -72,7 +72,7 @@ func main() {
 	// Migration execution
 	fmt.Println("Querrying MySQL Database")
 
-	results := db.Table("states").Where("entity_id LIKE ? AND state REGEXP ?", "sensor.%", "[0-9]+([.0-9]+)").Limit(appConfig.MySQLLimit).Find(&hastates)
+	results := db.Table("states").Where("entity_id LIKE ? AND state REGEXP ?  AND last_changed > ? AND last_changed < ?", "sensor.%", "^[+-]?([0-9]*[.])?[0-9]+$", appConfig.MySQLFilterStartDate, appConfig.MySQLFilterEndDate).Limit(appConfig.MySQLLimit).Find(&hastates)
 	if results.Error != nil {
 		panic(err.Error()) // proper error handling instead of panic in your app
 	}
