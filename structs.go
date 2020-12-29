@@ -42,6 +42,7 @@ type tempAttribute struct {
 	UnitOfMeasurement string  `json:"unit_of_measurement,omitempty"`
 	FriendlyName      string  `json:"friendly_name,omitempty"`
 	DeviceClass       string  `json:"device_class,omitempty"`
+	Model             string  `json:"model,omitempty"`
 }
 
 // '{"voltage": 2.75, "battery_level": 0.0, "unit_of_measurement": "\u00b0C", "friendly_name": "Bedroom Temperature", "device_class": "temperature"}'

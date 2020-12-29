@@ -72,7 +72,7 @@ func main() {
 	// Migration execution
 	fmt.Println("Querrying MySQL Database")
 
-	results := db.Table("states").Where("entity_id LIKE ? AND state REGEXP ?", "%temp%", "[0-9]+([.0-9]+)").Limit(appConfig.MySQLLimit).Find(&hastates)
+	results := db.Table("states").Where("entity_id LIKE ? AND state REGEXP ?", "sensor.%", "[0-9]+([.0-9]+)").Limit(appConfig.MySQLLimit).Find(&hastates)
 	if results.Error != nil {
 		panic(err.Error()) // proper error handling instead of panic in your app
 	}
@@ -115,6 +115,16 @@ func main() {
 				AddTag("entity_id", entityID).
 				AddTag("friendly_name", attrib.FriendlyName).
 				AddField("device_class_str", attrib.DeviceClass).
+				SetTime(hastates[i].LastUpdated)
+			writeAPI.WritePoint(p)
+		}
+
+		if attrib.Model != "" {
+			p = influxdb2.NewPointWithMeasurement(attrib.UnitOfMeasurement).
+				AddTag("domain", hastates[i].Domain).
+				AddTag("entity_id", entityID).
+				AddTag("friendly_name", attrib.FriendlyName).
+				AddField("device_class_str", attrib.Model).
 				SetTime(hastates[i].LastUpdated)
 			writeAPI.WritePoint(p)
 		}
