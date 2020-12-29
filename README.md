@@ -2,9 +2,21 @@
 Tool for HomeAssistant MySQL Historical Sensor Data Migration to InfluxDB
 # Purpose
 Migration of the sensor state historical data from MYSQLDB to InfluxDB.
+
+# Pre-requisits
+Home Assistant: https://www.home-assistant.io
+
+MySQL used as a Home Assistant recorder. I have MySQL 8.
+
+InfluxDB V2 https://docs.influxdata.com/influxdb/v2.0/  I have used official HomeAssistant Guide for the configuration: https://www.home-assistant.io/integrations/influxdb/ 
+
+Golang to compile the application for your system.
+
+Both MySQL and InfluxDB need to be exposed to the host you run the tool on over the network.
+
 # Supported Domains
 ## Sensor
-Currently only supported Temperature Sensors
+Currently only supported Sensors with state in numeric format.
 # HowTo
 ## Build
 go get -t ./...
