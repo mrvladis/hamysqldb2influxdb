@@ -8,6 +8,7 @@ Currently only supported Temperature Sensors
 # HowTo
 ## Build
 go get -t ./...
+
 go build
 ## Execute
 Copy config/config_sample.json to config/config.json
