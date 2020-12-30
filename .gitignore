@@ -15,3 +15,4 @@
 # vendor/
 config/config.json
 hamysqldb2influxdb
+__debug_bin
