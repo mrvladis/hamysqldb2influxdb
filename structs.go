@@ -10,14 +10,14 @@ type appConfiguration struct {
 	MySQLUser            string `json:"MySQL_User,omitempty"`
 	MySQLPassword        string `json:"MySQL_Password,omitempty"`
 	MySQLHost            string `json:"MySQL_Host,omitempty"`
-	MySQLPort            string `json:"MySQL_Port,omitempty"`
+	MySQLPort            int    `json:"MySQL_Port,omitempty"`
 	MySQLDB              string `json:"MySQL_DB,omitempty"`
 	MySQLCharset         string `json:"MySQL_Charset,omitempty"`
 	MySQLLimit           int    `json:"MySQL_Limit,omitempty"`
 	MySQLFilterStartDate string `json:"MySQL_FilterStartDate,omitempty"`
 	MySQLFilterEndDate   string `json:"MySQL_FilterEndDate,omitempty"`
 	InfluxHost           string `json:"Influx_Host,omitempty"`
-	InfluxPort           string `json:"Influx_Port,omitempty"`
+	InfluxPort           int    `json:"Influx_Port,omitempty"`
 	InfluxToken          string `json:"Influx_Token,omitempty"`
 	InfluxBucket         string `json:"Influx_Bucket,omitempty"`
 	InfluxOrg            string `json:"Influx_Org,omitempty"`
