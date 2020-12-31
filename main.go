@@ -81,7 +81,7 @@ func main() {
 		fmt.Println("Can't conver ", appConfig.MySQLFilterEndDate, "into Time. Error:", err)
 		panic(err.Error())
 	}
-	hoursPerMonth := 730.0
+	hoursPerMonth := appConfig.MySQLQuerryHoursInterval
 	fmt.Println("Preparing to process MySQL data from the date / time:", MySQLFilterStartDate, "till the date / time:", MySQLFilterEndDate)
 	if MySQLFilterEndDate.Sub(MySQLFilterStartDate).Hours()/hoursPerMonth > 2 { // If we have duration more than 2 month
 		FilterStartDate := MySQLFilterStartDate

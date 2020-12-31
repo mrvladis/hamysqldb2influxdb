@@ -6,6 +6,7 @@
     "MySQL_DB": "hadbmysql",
     "MySQL_Charset": "utf8mb4",
     "MySQL_Limit": 100,
+    "MySQL_QuerryHoursInterval": 730,
     "MySQL_FilterStartDate": "2020-12-01 00:00:00",
     "MySQL_FilterEndDate": "2020-12-31 23:59:59",
     "Influx_Host": "127.0.0.1",
