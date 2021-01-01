@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
@@ -12,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func processRequest(db *gorm.DB, writeAPI api.WriteAPI, FilterStartDate time.Time, FilterEndDate time.Time, appConfig *appConfiguration) {
+func processRequest(db *gorm.DB, writeAPI api.WriteAPI, FilterStartDate time.Time, FilterEndDate time.Time, appConfig *appConfiguration, wg *sync.WaitGroup) {
 	fmt.Println("Processing sequence")
 	FilterMySQLLimit := appConfig.MySQLLimit
 	hastates, results, err := processMysqlrequest(db, FilterStartDate, FilterEndDate, FilterMySQLLimit)
@@ -20,7 +21,13 @@ func processRequest(db *gorm.DB, writeAPI api.WriteAPI, FilterStartDate time.Tim
 		fmt.Println("Somethign went wrong as part of the MySQL query", err)
 		panic(err.Error())
 	}
-	processInfluxRequest(writeAPI, results, hastates)
+	wg.Add(1)
+	go func(writeAPI api.WriteAPI, results *gorm.DB, hastates []haStateTemp) {
+		// Decrement the counter when the go routine completes
+		defer wg.Done()
+		// Call the function check
+		processInfluxRequest(writeAPI, results, hastates)
+	}(writeAPI, results, hastates)
 
 }
 

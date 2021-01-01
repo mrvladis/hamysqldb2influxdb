@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
@@ -17,7 +18,7 @@ const (
 )
 
 func main() {
-
+	var wg sync.WaitGroup
 	var appConfig appConfiguration
 
 	fmt.Println("Welcome to Home Assistant MYSQL 2 InfluxDB migration Tool")
@@ -86,13 +87,14 @@ func main() {
 	if MySQLFilterEndDate.Sub(MySQLFilterStartDate).Hours()/hoursPerMonth > 2 { // If we have duration more than 2 month
 		FilterStartDate := MySQLFilterStartDate
 		for FilterEndDate := MySQLFilterStartDate.Add(time.Hour * time.Duration(hoursPerMonth)); MySQLFilterEndDate.Sub(FilterEndDate).Hours() > hoursPerMonth; FilterEndDate = FilterEndDate.Add(time.Hour * time.Duration(hoursPerMonth)) {
-			processRequest(db, writeAPI, FilterStartDate, FilterEndDate, &appConfig)
+			processRequest(db, writeAPI, FilterStartDate, FilterEndDate, &appConfig, &wg)
 			FilterStartDate = FilterEndDate
 		}
-		processRequest(db, writeAPI, FilterStartDate, MySQLFilterEndDate, &appConfig)
+		processRequest(db, writeAPI, FilterStartDate, MySQLFilterEndDate, &appConfig, &wg)
 
 	} else {
-		processRequest(db, writeAPI, MySQLFilterStartDate, MySQLFilterEndDate, &appConfig)
+		processRequest(db, writeAPI, MySQLFilterStartDate, MySQLFilterEndDate, &appConfig, &wg)
 	}
-
+	// Wait for all the checkWebsite calls to finish
+	wg.Wait()
 }
