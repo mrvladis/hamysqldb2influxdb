@@ -6,25 +6,50 @@ import (
 	"strings"
 	"time"
 
-	"gorm.io/gorm"
-
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
+	"gorm.io/gorm"
 )
 
-func processMysqlrequest(db *gorm.DB, writeAPI api.WriteAPI, FilterStartDate time.Time, FilterEndDate time.Time, appConfig *appConfiguration) {
+func processRequest(db *gorm.DB, writeAPI api.WriteAPI, FilterStartDate time.Time, FilterEndDate time.Time, appConfig *appConfiguration) {
+	fmt.Println("Processing sequence")
+	FilterMySQLLimit := appConfig.MySQLLimit
+	hastates, results, err := processMysqlrequest(db, FilterStartDate, FilterEndDate, FilterMySQLLimit)
+	if err != nil {
+		fmt.Println("Somethign went wrong as part of the MySQL query", err)
+		panic(err.Error())
+	}
+	processInfluxRequest(writeAPI, results, hastates)
+
+}
+
+func processMysqlrequest(db *gorm.DB, FilterStartDate time.Time, FilterEndDate time.Time, FilterMySQLLimit int) ([]haStateTemp, *gorm.DB, error) {
 	var hastates []haStateTemp
-	var attrib tempAttribute
-	var p *write.Point
-	var entityID string
-	var i int64
+
 	fmt.Println("Querrying MySQL Database for the Sensor data between ", FilterStartDate, "and ", FilterEndDate)
-	results := db.Table("states").Where("entity_id LIKE ? AND state REGEXP ?  AND last_changed > ? AND last_changed < ?", "sensor.%", "^[+-]?([0-9]*[.])?[0-9]+$", FilterStartDate, FilterEndDate).Limit(appConfig.MySQLLimit).Find(&hastates)
+	results := db.Table("states").Where("entity_id LIKE ? AND state REGEXP ?  AND last_changed > ? AND last_changed < ?", "sensor.%", "^[+-]?([0-9]*[.])?[0-9]+$", FilterStartDate, FilterEndDate).Limit(FilterMySQLLimit).Find(&hastates)
+	/*
+		2021/01/01 17:54:38 /Users/vladislavnedosekin/go/src/hamysqldb2influxdb/mysql.go:23 SLOW SQL >= 200ms
+		[628776.215ms] [rows:1309307] SELECT * FROM `states` WHERE entity_id LIKE 'sensor.%' AND state REGEXP '^[+-]?([0-9]*[.])?[0-9]+$'  AND last_changed > '2020-11-01 20:00:00' AND last_changed < '2020-12-01 23:59:59'
+	*/
+	/*	results := db.Table("(?) as tmpt", db.Table("states").Where("last_changed > ? AND last_changed < ?", FilterStartDate, FilterEndDate)).Where("entity_id LIKE ? AND state REGEXP ?", "sensor.%", "^[+-]?([0-9]*[.])?[0-9]+$").Limit(appConfig.MySQLLimit).Find(&hastates)
+		2021/01/01 17:33:05 /Users/vladislavnedosekin/go/src/hamysqldb2influxdb/mysql.go:25 SLOW SQL >= 200ms
+		[695058.282ms] [rows:1309307] SELECT * FROM (SELECT * FROM `states` WHERE last_changed > '2020-11-01 20:00:00' AND last_changed < '2020-12-01 23:59:59') as tmpt WHERE entity_id LIKE 'sensor.%' AND state REGEXP '^[+-]?([0-9]*[.])?[0-9]+$'
+	*/
 	if results.Error != nil {
 		panic(results.Error) // proper error handling instead of panic in your app
 	}
 	fmt.Println("There are", results.RowsAffected, " Rows to process")
+	return hastates, results, results.Error
+}
+
+func processInfluxRequest(writeAPI api.WriteAPI, results *gorm.DB, hastates []haStateTemp) {
+	var i int64
+	var attrib tempAttribute
+	var p *write.Point
+	var entityID string
+
 	fmt.Println("Asynchronisly writing data to InfluxDB")
 	for i = 0; i < results.RowsAffected; i++ {
 		fmt.Printf("\rProcessign Row %d/%d", i, results.RowsAffected)
@@ -86,4 +111,5 @@ func processMysqlrequest(db *gorm.DB, writeAPI api.WriteAPI, FilterStartDate tim
 		writeAPI.WritePoint(p)
 	}
 	fmt.Println("")
+
 }

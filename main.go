@@ -86,13 +86,13 @@ func main() {
 	if MySQLFilterEndDate.Sub(MySQLFilterStartDate).Hours()/hoursPerMonth > 2 { // If we have duration more than 2 month
 		FilterStartDate := MySQLFilterStartDate
 		for FilterEndDate := MySQLFilterStartDate.Add(time.Hour * time.Duration(hoursPerMonth)); MySQLFilterEndDate.Sub(FilterEndDate).Hours() > hoursPerMonth; FilterEndDate = FilterEndDate.Add(time.Hour * time.Duration(hoursPerMonth)) {
-			processMysqlrequest(db, writeAPI, FilterStartDate, FilterEndDate, &appConfig)
+			processRequest(db, writeAPI, FilterStartDate, FilterEndDate, &appConfig)
 			FilterStartDate = FilterEndDate
 		}
-		processMysqlrequest(db, writeAPI, FilterStartDate, MySQLFilterEndDate, &appConfig)
+		processRequest(db, writeAPI, FilterStartDate, MySQLFilterEndDate, &appConfig)
 
 	} else {
-		processMysqlrequest(db, writeAPI, MySQLFilterStartDate, MySQLFilterEndDate, &appConfig)
+		processRequest(db, writeAPI, MySQLFilterStartDate, MySQLFilterEndDate, &appConfig)
 	}
 
 }
