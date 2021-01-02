@@ -20,13 +20,34 @@ Currently only supported Sensors with state in numeric format.
 
 The following Attributes values would be copied if not empty or 0:
 
-*  Voltage 
+*   Voltage 
 *	BatteryLevel 
 *	UnitOfMeasurement 
 *	FriendlyName
 *	DeviceClass 
 *	Model
 
+## Climate
+
+The following Attributes values would be copied if not empty or greater than -50:
+   
+*    HvacModes            
+*	MinTemp              
+*	MaxTemp              
+*	PresetModes          
+*	CurrentTemperature   
+*	Temperature          
+*	HvacAction           
+*	PresetMode           
+*	PercentageDemand     
+*	ControlOutputState   
+*	HeatingRate          
+*	WindowState          
+*	WindowDetectionActive
+*	AwayModeSupressed    
+*	FriendlyName         
+*	SupportedFeatures    
+*	UnitOfMeasurement    
 # HowTo
 ## Build
 go get -t ./...
