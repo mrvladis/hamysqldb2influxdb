@@ -20,18 +20,38 @@ const (
 func main() {
 	var wg sync.WaitGroup
 	var appConfig appConfiguration
+	var entitiesToProcess []entities
+	var entityToAdd entities
 
 	fmt.Println("Welcome to Home Assistant MYSQL 2 InfluxDB migration Tool")
 	configFilePath := "config/config.json"
 	configFile, err := os.Open(configFilePath)
 	if err != nil {
+		fmt.Println("Cant't open configuration file", configFilePath, ". Failed with the following error:", err)
 		panic(err.Error())
 	}
 	decoder := json.NewDecoder(configFile)
 	err = decoder.Decode(&appConfig)
 	if err != nil {
+		fmt.Println("Cant't decode Application parameters from the configuration file ", configFilePath, ". Failed with the following error:", err)
 		panic(err.Error())
 	}
+	fmt.Println("Validating Requited Entities")
+	if appConfig.MySQLHASensorQueryEnabled {
+		entityToAdd.Enabled = appConfig.MySQLHASensorQueryEnabled
+		entityToAdd.MySQLSearchPattern = appConfig.MySQLHASensorQuery
+		entityToAdd.Domain = "sensor"
+		fmt.Println("Adding Entity [", entityToAdd.Domain, "] with the search pattern [", entityToAdd.MySQLSearchPattern, "]")
+		entitiesToProcess = append(entitiesToProcess, entityToAdd)
+	}
+	if appConfig.MySQLHAClimateQueryEnabled {
+		entityToAdd.Enabled = appConfig.MySQLHAClimateQueryEnabled
+		entityToAdd.MySQLSearchPattern = appConfig.MySQLHAClimateQuery
+		entityToAdd.Domain = "climate"
+		fmt.Println("Adding Entity [", entityToAdd.Domain, "] with the search pattern [", entityToAdd.MySQLSearchPattern, "]")
+		entitiesToProcess = append(entitiesToProcess, entityToAdd)
+	}
+
 	fmt.Println("Trying to connect to MySQL host ", appConfig.MySQLHost, " and port ", appConfig.MySQLPort)
 	mySQLdsn := appConfig.MySQLUser + ":" + appConfig.MySQLPassword + "@tcp(" + appConfig.MySQLHost + ":" + strconv.Itoa(appConfig.MySQLPort) + ")/" + appConfig.MySQLDB + "?charset=" + appConfig.MySQLCharset + "&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(mySQLdsn), &gorm.Config{})
@@ -82,18 +102,26 @@ func main() {
 		fmt.Println("Can't conver ", appConfig.MySQLFilterEndDate, "into Time. Error:", err)
 		panic(err.Error())
 	}
-	hoursPerMonth := appConfig.MySQLQuerryHoursInterval
+	hoursPerMonth := appConfig.MySQLQueryHoursInterval
 	fmt.Println("Preparing to process MySQL data from the date / time:", MySQLFilterStartDate, "till the date / time:", MySQLFilterEndDate)
 	if MySQLFilterEndDate.Sub(MySQLFilterStartDate).Hours()/hoursPerMonth > 2 { // If we have duration more than 2 month
 		FilterStartDate := MySQLFilterStartDate
 		for FilterEndDate := MySQLFilterStartDate.Add(time.Hour * time.Duration(hoursPerMonth)); MySQLFilterEndDate.Sub(FilterEndDate).Hours() > hoursPerMonth; FilterEndDate = FilterEndDate.Add(time.Hour * time.Duration(hoursPerMonth)) {
-			processRequest(db, writeAPI, FilterStartDate, FilterEndDate, &appConfig, &wg)
+			for e, entity := range entitiesToProcess {
+				e = e
+				processRequest(db, writeAPI, entity, FilterStartDate, FilterEndDate, &appConfig, &wg)
+			}
 			FilterStartDate = FilterEndDate
 		}
-		processRequest(db, writeAPI, FilterStartDate, MySQLFilterEndDate, &appConfig, &wg)
-
+		for e, entity := range entitiesToProcess {
+			processRequest(db, writeAPI, entity, FilterStartDate, MySQLFilterEndDate, &appConfig, &wg)
+			e = e
+		}
 	} else {
-		processRequest(db, writeAPI, MySQLFilterStartDate, MySQLFilterEndDate, &appConfig, &wg)
+		for e, entity := range entitiesToProcess {
+			processRequest(db, writeAPI, entity, MySQLFilterStartDate, MySQLFilterEndDate, &appConfig, &wg)
+			e = e
+		}
 	}
 	// Wait for all the checkWebsite calls to finish
 	wg.Wait()
