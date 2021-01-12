@@ -105,22 +105,24 @@ func main() {
 	hoursPerMonth := appConfig.MySQLQueryHoursInterval
 	fmt.Println("Preparing to process MySQL data from the date / time:", MySQLFilterStartDate, "till the date / time:", MySQLFilterEndDate)
 	if MySQLFilterEndDate.Sub(MySQLFilterStartDate).Hours()/hoursPerMonth > 2 { // If we have duration more than 2 month
-		FilterStartDate := MySQLFilterStartDate
-		for FilterEndDate := MySQLFilterStartDate.Add(time.Hour * time.Duration(hoursPerMonth)); MySQLFilterEndDate.Sub(FilterEndDate).Hours() > hoursPerMonth; FilterEndDate = FilterEndDate.Add(time.Hour * time.Duration(hoursPerMonth)) {
-			for e, entity := range entitiesToProcess {
-				e = e
-				processRequest(db, writeAPI, entity, FilterStartDate, FilterEndDate, &appConfig, &wg)
-			}
-			FilterStartDate = FilterEndDate
-		}
 		for e, entity := range entitiesToProcess {
-			processRequest(db, writeAPI, entity, FilterStartDate, MySQLFilterEndDate, &appConfig, &wg)
-			e = e
+			fmt.Println("Processing Entity", e)
+			FilterStartDate := MySQLFilterStartDate
+			for FilterEndDate := MySQLFilterStartDate.Add(time.Hour * time.Duration(hoursPerMonth)); MySQLFilterEndDate.Sub(FilterEndDate).Hours() > hoursPerMonth; FilterEndDate = FilterEndDate.Add(time.Hour * time.Duration(hoursPerMonth)) {
+				processRequest(db, writeAPI, entity, FilterStartDate, FilterEndDate, &appConfig, &wg)
+				FilterStartDate = FilterEndDate
+			}
+			wg.Wait()
+		}
+
+		for e, entity := range entitiesToProcess {
+			fmt.Println("Processing Entity", e)
+			processRequest(db, writeAPI, entity, MySQLFilterStartDate, MySQLFilterEndDate, &appConfig, &wg)
 		}
 	} else {
 		for e, entity := range entitiesToProcess {
+			fmt.Println("Processing Entity", e)
 			processRequest(db, writeAPI, entity, MySQLFilterStartDate, MySQLFilterEndDate, &appConfig, &wg)
-			e = e
 		}
 	}
 	// Wait for all the checkWebsite calls to finish
