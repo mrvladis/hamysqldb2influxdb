@@ -110,7 +110,7 @@ func main() {
 	if MySQLFilterEndDate.Sub(MySQLFilterStartDate).Hours()/hoursPerMonth > 2 { // If we have duration more than 2 month
 		for e, entity := range entitiesToProcess {
 			fmt.Println("Processing Entity", e)
-			FilterStartDate := MySQLFilterStartDate
+			FilterStartDate = MySQLFilterStartDate
 			for FilterEndDate := MySQLFilterStartDate.Add(time.Hour * time.Duration(hoursPerMonth)); MySQLFilterEndDate.Sub(FilterEndDate).Hours() > hoursPerMonth; FilterEndDate = FilterEndDate.Add(time.Hour * time.Duration(hoursPerMonth)) {
 				processRequest(db, writeAPI, entity, FilterStartDate, FilterEndDate, &appConfig, &wg)
 				FilterStartDate = FilterEndDate
