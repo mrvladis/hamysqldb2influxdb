@@ -24,6 +24,7 @@ func main() {
 	var entityToAdd entities
 
 	fmt.Println("Welcome to Home Assistant MYSQL 2 InfluxDB migration Tool")
+	fmt.Println("Execurion statred at [", time.Now(), "]")
 	configFilePath := "config/config.json"
 	configFile, err := os.Open(configFilePath)
 	if err != nil {
@@ -107,7 +108,7 @@ func main() {
 	if appConfig.ScheduleRun { // let's check if we need to process time range from the config or we run as a cron.
 		fmt.Println("Executing as a scron job to get data for the last ", appConfig.MySQLQueryHoursInterval, "hours")
 		MySQLFilterEndDate = time.Now()
-		MySQLFilterStartDate = MySQLFilterEndDate.Add(-time.Hour*time.Duration(appConfig.MySQLQueryHoursInterval) - time.Hour)
+		MySQLFilterStartDate = MySQLFilterEndDate.Add(-time.Hour*time.Duration(appConfig.MySQLQueryHoursInterval) - time.Minute*10)
 		fmt.Println("Preparing to process MySQL data from the date / time:", MySQLFilterStartDate, "till the date / time:", MySQLFilterEndDate)
 	} else {
 		fmt.Println("Preparing to process MySQL data from the date / time:", MySQLFilterStartDate, "till the date / time:", MySQLFilterEndDate)
