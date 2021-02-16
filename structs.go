@@ -26,6 +26,7 @@ type appConfiguration struct {
 	InfluxToken                string  `json:"Influx_Token,omitempty"`
 	InfluxBucket               string  `json:"Influx_Bucket,omitempty"`
 	InfluxOrg                  string  `json:"Influx_Org,omitempty"`
+	ScheduleRun                bool    `json:"Schedule_Run,omitempty"`
 }
 
 type haState struct {

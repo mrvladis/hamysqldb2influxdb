@@ -103,12 +103,17 @@ func main() {
 		panic(err.Error())
 	}
 	hoursPerMonth := appConfig.MySQLQueryHoursInterval
-	fmt.Println("Preparing to process MySQL data from the date / time:", MySQLFilterStartDate, "till the date / time:", MySQLFilterEndDate)
-
 	var FilterStartDate time.Time
-
-	if MySQLFilterEndDate.Sub(MySQLFilterStartDate).Hours()/hoursPerMonth > 2 { // If we have duration more than 2 month
-		for e, entity := range entitiesToProcess {
+	if appConfig.ScheduleRun { // let's check if we need to process time range from the config or we run as a cron.
+		fmt.Println("Executing as a scron job to get data for the last ", appConfig.MySQLQueryHoursInterval, "hours")
+		MySQLFilterEndDate = time.Now()
+		MySQLFilterStartDate = MySQLFilterEndDate.Add(-time.Hour*time.Duration(appConfig.MySQLQueryHoursInterval) - time.Hour)
+		fmt.Println("Preparing to process MySQL data from the date / time:", MySQLFilterStartDate, "till the date / time:", MySQLFilterEndDate)
+	} else {
+		fmt.Println("Preparing to process MySQL data from the date / time:", MySQLFilterStartDate, "till the date / time:", MySQLFilterEndDate)
+	}
+	if MySQLFilterEndDate.Sub(MySQLFilterStartDate).Hours()/hoursPerMonth > 2 { // Let's process the data and check the duration.
+		for e, entity := range entitiesToProcess { //If we have duration more than 2 month - we need to process ib batches.
 			fmt.Println("Processing Entity", e)
 			FilterStartDate = MySQLFilterStartDate
 			for FilterEndDate := MySQLFilterStartDate.Add(time.Hour * time.Duration(hoursPerMonth)); MySQLFilterEndDate.Sub(FilterEndDate).Hours() > hoursPerMonth; FilterEndDate = FilterEndDate.Add(time.Hour * time.Duration(hoursPerMonth)) {
@@ -127,6 +132,7 @@ func main() {
 			processRequest(db, writeAPI, entity, MySQLFilterStartDate, MySQLFilterEndDate, &appConfig, &wg)
 		}
 	}
-	// Wait for all the checkWebsite calls to finish
+	// Wait for all the processRequest calls to finish
 	wg.Wait()
+
 }
