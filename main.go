@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"sync"
 	"time"
@@ -25,7 +27,12 @@ func main() {
 
 	fmt.Println("Welcome to Home Assistant MYSQL 2 InfluxDB migration Tool")
 	fmt.Println("Execurion statred at [", time.Now(), "]")
-	configFilePath := "config/config.json"
+
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		log.Fatal(err)
+	}
+	configFilePath := dir + "/config/config.json"
 	configFile, err := os.Open(configFilePath)
 	if err != nil {
 		fmt.Println("Cant't open configuration file", configFilePath, ". Failed with the following error:", err)
